@@ -11,63 +11,82 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from io import BytesIO
 
+# Minimalist & Unique Page Config
 st.set_page_config(
-    page_title="AI Resume Optimizer",
-    page_icon="📄",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="ResumeFlow • AI Optimizer",
+    page_icon="✦",
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Modern Custom CSS
+# Unique Minimalist CSS
 st.markdown("""
     <style>
-    .main {background-color: #0e1117; color: #ffffff;}
-    .stButton>button {
-        width: 100%; 
-        height: 3.2rem; 
-        background: linear-gradient(90deg, #00c853, #64dd17);
-        color: white; 
-        border: none; 
-        border-radius: 8px;
-        font-weight: bold;
+    .main {
+        background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 100%);
+        color: #e0e0ff;
     }
-    .match-card {
-        background: linear-gradient(135deg, #1e1e2e, #2a2a40);
-        padding: 25px;
-        border-radius: 15px;
+    .header {
         text-align: center;
-        border: 2px solid #00c853;
+        padding: 2rem 0 1.5rem;
+        background: linear-gradient(90deg, #6b4eff, #00d4ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -1px;
     }
-    .score {font-size: 3.5rem; font-weight: bold; margin: 10px 0;}
-    .high {color: #00ff88;}
-    .medium {color: #ffcc00;}
-    .low {color: #ff5252;}
+    .tagline {
+        text-align: center;
+        color: #a0a0cc;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    .card {
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        padding: 1.8rem;
+        margin: 1rem 0;
+    }
+    .score-circle {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px auto;
+        font-size: 3.2rem;
+        font-weight: 700;
+        border: 8px solid;
+        background: rgba(0,0,0,0.3);
+    }
+    .high { border-color: #00ffaa; color: #00ffaa; }
+    .medium { border-color: #ffd700; color: #ffd700; }
+    .low { border-color: #ff4d4d; color: #ff4d4d; }
+    .stButton>button {
+        background: linear-gradient(90deg, #6b4eff, #00d4ff);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        width: 100%;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("📄 AI Resume Optimizer")
-st.markdown("**Get AI-powered resume analysis, skill matching & tailored resume in seconds**")
+st.markdown('<h1 class="header">ResumeFlow</h1>', unsafe_allow_html=True)
+st.markdown('<p class="tagline">AI that turns good resumes into great ones</p>', unsafe_allow_html=True)
 
-# Sidebar
-with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/000000/resume.png", width=80)
-    st.header("How it Works")
-    st.markdown("""
-    1. Upload your current resume (PDF)
-    2. Paste the target Job Description
-    3. Click **Analyze**
-    4. Get score + suggestions + tailored resume
-    """)
-    st.divider()
-    st.success("✅ Optimized for Campus Placements 2026")
-    st.caption("Built with Groq • LangChain • Streamlit")
-
-# API Key Setup
+# API Setup
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
 
 if not groq_api_key:
-    st.error("GROQ_API_KEY is missing. Add it in Streamlit Cloud → Secrets")
+    st.error("Please add GROQ_API_KEY in Streamlit Secrets")
     st.stop()
 
 llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.2, api_key=groq_api_key)
@@ -78,10 +97,7 @@ def load_jobs():
     try:
         return pd.read_csv("jobs.csv")
     except:
-        return pd.DataFrame({
-            "title": ["Software Engineer", "Data Analyst", "ML Engineer"],
-            "description": ["Python, Django, SQL, AWS", "Python, SQL, Power BI", "Python, PyTorch, NLP"]
-        })
+        return pd.DataFrame({"title": ["Software Engineer"], "description": ["Python, SQL, Git"]})
 
 jobs_df = load_jobs()
 
@@ -96,119 +112,121 @@ def extract_resume_text(pdf_file):
 def create_tailored_pdf(tailored_text):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
-    y = letter[1] - 60
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "TAILORED RESUME - AI OPTIMIZED")
-    y -= 40
+    y = letter[1] - 70
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(70, y, "RESUMEFLOW - AI TAILORED RESUME")
+    y -= 50
     c.setFont("Helvetica", 11)
-    for line in tailored_text.split("\n"):
-        if y < 60:
+    for line in tailored_text.splitlines():
+        if y < 70:
             c.showPage()
-            y = letter[1] - 60
-        c.drawString(50, y, line.strip())
-        y -= 14
+            y = letter[1] - 70
+        c.drawString(70, y, line.strip())
+        y -= 15
     c.save()
     buffer.seek(0)
     return buffer
 
-# Main Layout
-col1, col2 = st.columns([1, 1.2])
+# Upload Section
+st.markdown("### Upload your resume and target job")
+col1, col2 = st.columns(2)
 
 with col1:
-    uploaded_file = st.file_uploader("📤 Upload Your Resume (PDF)", type="pdf")
+    uploaded_file = st.file_uploader("Resume (PDF)", type="pdf", label_visibility="collapsed")
 
 with col2:
-    jd_text = st.text_area("📋 Paste Job Description", height=220, 
-                          placeholder="Copy and paste the full job description here...")
+    jd_text = st.text_area("Job Description", height=180, placeholder="Paste the full JD here...", label_visibility="collapsed")
 
 if uploaded_file and jd_text:
-    if st.button("🔍 Analyze Resume & Generate Tailored Version", type="primary"):
+    if st.button("✦ Analyze & Optimize Resume", use_container_width=True):
         
-        with st.spinner("AI is analyzing your resume... This may take 10-15 seconds"):
+        with st.spinner("Thinking deeply..."):
             resume_text = extract_resume_text(uploaded_file)
 
-            # Calculate Match Score
+            # Match Score
             resume_emb = embeddings.embed_query(resume_text)
             jd_emb = embeddings.embed_query(jd_text)
-            similarity = cos_sim(torch.tensor([resume_emb]), torch.tensor([jd_emb]))[0][0].item()
-            match_score = round(similarity * 100, 1)
+            score = round(cos_sim(torch.tensor([resume_emb]), torch.tensor([jd_emb]))[0][0].item() * 100, 1)
 
-            # Score Styling
-            if match_score >= 75:
+            if score >= 75:
                 score_class = "high"
-                emoji = "🎯 Excellent Match!"
-            elif match_score >= 55:
+                feedback = "Excellent alignment"
+            elif score >= 55:
                 score_class = "medium"
-                emoji = "👍 Good Match"
+                feedback = "Good potential"
             else:
                 score_class = "low"
-                emoji = "⚠️ Needs Improvement"
+                feedback = "Significant improvements needed"
 
-            # Display Results in Tabs
-            tab1, tab2, tab3 = st.tabs(["📊 Match Score", "💡 Suggestions", "📝 Tailored Resume"])
+            # Results in clean cards
+            st.markdown("### Analysis Result")
 
-            with tab1:
+            col_a, col_b = st.columns([1, 2])
+
+            with col_a:
                 st.markdown(f"""
-                <div class="match-card">
-                    <h3>{emoji}</h3>
-                    <div class="score {score_class}">{match_score}%</div>
-                    <p>Resume-Job Match Score</p>
+                <div class="card" style="text-align:center">
+                    <div class="score-circle {score_class}">
+                        {score}%
+                    </div>
+                    <p style="margin-top:10px; font-size:1.1rem;">{feedback}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
-                st.subheader("Top Matching Sample Roles")
-                job_embs = [embeddings.embed_query(desc) for desc in jobs_df['description']]
-                sims = [cos_sim(torch.tensor([resume_emb]), torch.tensor([je]))[0][0].item() for je in job_embs]
-                jobs_df['score'] = [round(s*100, 1) for s in sims]
-                st.dataframe(jobs_df.nlargest(3, 'score')[['title', 'score']], hide_index=True, use_container_width=True)
-
-            with tab2:
+            with col_b:
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.subheader("🔑 Missing Key Skills")
+                
                 prompt = f"""
-                You are an expert career coach for Indian engineering students.
-                Resume: {resume_text[:4500]}
-                Job Description: {jd_text[:4500]}
-
-                Return strictly in this format:
-                MISSING SKILLS:\n- skill1\n- skill2...
-                IMPROVEMENT SUGGESTIONS:\n1. ...\n2. ...
+                Resume: {resume_text[:3500]}
+                Job: {jd_text[:3500]}
+                List only the most important missing skills from the JD (maximum 6 bullet points).
                 """
+                missing = llm.invoke(prompt).content
+                st.markdown(missing)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                response = llm.invoke(prompt)
-                st.markdown(response.content)
+            # Tailored Resume Section
+            st.markdown("### 📄 Your AI-Optimized Resume")
 
-            with tab3:
-                full_prompt = f"""
-                You are an expert resume writer. Rewrite the following resume to perfectly match the job description.
-                Keep it professional, use strong action verbs, and quantify where possible.
+            full_prompt = f"""
+            Rewrite this resume to strongly match the job description.
+            Use powerful action verbs. Keep it concise and professional.
+            Original Resume: {resume_text[:4000]}
+            Job Description: {jd_text[:4000]}
+            Return only the complete tailored resume.
+            """
 
-                Original Resume:
-                {resume_text[:4000]}
+            with st.spinner("Crafting your tailored resume..."):
+                response = llm.invoke(full_prompt)
+                tailored = response.content
 
-                Job Description:
-                {jd_text[:4000]}
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown(tailored)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-                Return only the full tailored resume in clean bullet point format.
-                """
+            pdf_bytes = create_tailored_pdf(tailored)
 
-                with st.spinner("Generating tailored resume..."):
-                    tailored_response = llm.invoke(full_prompt)
-                    tailored_text = tailored_response.content
-
-                st.markdown("### Your AI-Tailored Resume")
-                st.markdown(tailored_text)
-
-                pdf_bytes = create_tailored_pdf(tailored_text)
-
-                st.download_button(
-                    label="📥 Download Tailored Resume as PDF",
-                    data=pdf_bytes,
-                    file_name="AI_Tailored_Resume.pdf",
-                    mime="application/pdf",
-                    type="primary"
-                )
+            st.download_button(
+                label="↓ Download Optimized Resume PDF",
+                data=pdf_bytes,
+                file_name="ResumeFlow_Optimized_Resume.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
 
 else:
-    st.info("👆 Please upload your resume and paste the Job Description to begin analysis.")
+    st.markdown("""
+    <div class="card" style="text-align:center; padding:3rem 1rem;">
+        <h3>Ready to level up your resume?</h3>
+        <p>Upload your current resume and the job description you want to target.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.divider()
-st.markdown("Made with ❤️ for students in Uttar Pradesh | Groq • LangChain • Streamlit")
+st.markdown("---")
+st.markdown(
+    "<p style='text-align:center; color:#777; font-size:0.9rem;'>"
+    "ResumeFlow • Minimal AI Resume Optimizer • Made for ambitious students"
+    "</p>", 
+    unsafe_allow_html=True
+)
