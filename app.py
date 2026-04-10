@@ -10,7 +10,7 @@ import torch
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from io import BytesIO
-import re
+import time
 
 st.set_page_config(
     page_title="ResumeFlow • AI Resume Optimizer",
@@ -19,94 +19,100 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Attractive Modern CSS
+# Eye-friendly Dark Theme with Smooth Animations
 st.markdown("""
     <style>
     .main {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        color: #f0f0ff;
+        background: linear-gradient(135deg, #0c0a1f 0%, #1a1833 100%);
+        color: #e0e7ff;
     }
     .hero {
         text-align: center;
-        padding: 3rem 0 2rem;
-        background: linear-gradient(90deg, #7b5eff, #00f2ff);
+        padding: 2.5rem 0 1.5rem;
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #5e72ff, #00d4ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 3.2rem;
-        font-weight: 800;
-        letter-spacing: -2px;
+        animation: glow 4s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+        from { text-shadow: 0 0 15px #5e72ff; }
+        to { text-shadow: 0 0 30px #00d4ff; }
     }
     .tagline {
         text-align: center;
-        color: #b0b0ff;
-        font-size: 1.25rem;
-        margin-bottom: 2.5rem;
+        color: #a5b4fc;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
     }
     .glass-card {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 20px;
+        background: rgba(30, 30, 60, 0.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(100, 120, 255, 0.2);
+        border-radius: 18px;
         padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        margin: 1.2rem 0;
+        animation: slideUp 0.9s ease-out forwards;
+        opacity: 0;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     .score-circle {
-        width: 200px;
-        height: 200px;
+        width: 195px;
+        height: 195px;
         border-radius: 50%;
-        margin: 20px auto;
+        margin: 25px auto;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3.8rem;
-        font-weight: 900;
-        border: 12px solid;
-        box-shadow: 0 0 40px rgba(0, 255, 170, 0.4);
+        font-size: 3.5rem;
+        font-weight: 800;
+        border: 10px solid;
+        animation: pulse 2.5s infinite ease-in-out;
+        box-shadow: 0 0 35px rgba(94, 114, 255, 0.5);
     }
-    .high { border-color: #00ffaa; color: #00ffaa; }
-    .medium { border-color: #ffcc00; color: #ffcc00; }
-    .low { border-color: #ff4d94; color: #ff4d94; }
+    .high { border-color: #4ade80; color: #4ade80; }
+    .medium { border-color: #facc15; color: #facc15; }
+    .low { border-color: #fb7185; color: #fb7185; }
     .stButton>button {
-        background: linear-gradient(90deg, #7b5eff, #00f2ff);
+        background: linear-gradient(90deg, #5e72ff, #00d4ff);
         color: white;
         border: none;
         border-radius: 50px;
-        height: 3.5rem;
-        font-size: 1.1rem;
-        font-weight: 700;
-        transition: all 0.3s;
+        height: 3.6rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+        transition: all 0.4s ease;
     }
     .stButton>button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(123, 94, 255, 0.5);
-    }
-    .tab-label {
-        font-size: 1.1rem;
-        font-weight: 600;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(94, 114, 255, 0.6);
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Hero Section
 st.markdown('<h1 class="hero">ResumeFlow</h1>', unsafe_allow_html=True)
-st.markdown('<p class="tagline">Transform your resume into a job-winning masterpiece with AI</p>', unsafe_allow_html=True)
+st.markdown('<p class="tagline">Smart AI that helps you land better opportunities</p>', unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
-    st.image("https://img.icons8.com/3d-fluency/94/resume.png", width=90)
+    st.image("https://img.icons8.com/3d-fluency/94/resume.png", width=85)
     st.title("ResumeFlow")
-    st.markdown("### Your AI Career Co-Pilot")
+    st.markdown("**AI Resume Optimizer**")
     st.divider()
     st.markdown("**Features**")
-    st.markdown("• Smart Match Score\n• Tailored Resume\n• Cover Letter\n• Interview Prep\n• Keyword Analysis")
+    st.markdown("• Match Score with Animation\n• Tailored Resume\n• Cover Letter\n• Interview Questions\n• Smooth Animations")
     st.divider()
-    st.caption("Made for ambitious students • 2026 Placements")
+    st.caption("Eye-friendly design • Built for 2026 placements")
 
-# API Setup
+# API Key Setup
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
 if not groq_api_key:
-    st.error("Please add GROQ_API_KEY in Streamlit Secrets")
+    st.error("❌ GROQ_API_KEY not found. Please add it in Streamlit Secrets.")
     st.stop()
 
 llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.2, api_key=groq_api_key)
@@ -117,7 +123,7 @@ def load_jobs():
     try:
         return pd.read_csv("jobs.csv")
     except:
-        return pd.DataFrame({"title": ["Software Engineer"], "description": ["Python"]})
+        return pd.DataFrame({"title": ["Software Engineer"], "description": ["Python, SQL"]})
 
 jobs_df = load_jobs()
 
@@ -129,7 +135,7 @@ def extract_resume_text(pdf_file):
                 text += page_text + "\n"
     return text.strip()
 
-def create_tailored_pdf(content, title="ResumeFlow Optimized"):
+def create_tailored_pdf(content, title="ResumeFlow Optimized Resume"):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     y = letter[1] - 70
@@ -147,43 +153,38 @@ def create_tailored_pdf(content, title="ResumeFlow Optimized"):
     buffer.seek(0)
     return buffer
 
-# Session State for History
-if 'history' not in st.session_state:
-    st.session_state.history = []
+# Main Input
+col1, col2 = st.columns([1, 1.2])
 
-# Input Section
-col_input1, col_input2 = st.columns([1, 1.3])
+with col1:
+    uploaded_file = st.file_uploader("📄 Upload Your Resume (PDF)", type="pdf")
 
-with col_input1:
-    uploaded_file = st.file_uploader("📤 Upload Your Resume (PDF)", type="pdf", help="Max 5MB")
-
-with col_input2:
-    jd_text = st.text_area("📋 Paste Job Description", height=180, 
-                          placeholder="Copy the full job description here...")
+with col2:
+    jd_text = st.text_area("📝 Paste Job Description", height=160, placeholder="Paste the full job description here...")
 
 if uploaded_file and jd_text:
-    if st.button("🚀 Generate My Complete Job Application Kit", use_container_width=True):
+    if st.button("🚀 Analyze Resume & Generate Full Application Kit", use_container_width=True):
         
-        with st.spinner("AI is working its magic..."):
+        with st.spinner("AI is analyzing your profile..."):
+            time.sleep(0.6)   # Small delay for better UX feel
             resume_text = extract_resume_text(uploaded_file)
 
-            # Calculate Match Score
+            # Match Score Calculation
             resume_emb = embeddings.embed_query(resume_text)
             jd_emb = embeddings.embed_query(jd_text)
             match_score = round(cos_sim(torch.tensor([resume_emb]), torch.tensor([jd_emb]))[0][0].item() * 100, 1)
 
             score_class = "high" if match_score >= 75 else "medium" if match_score >= 55 else "low"
-            feedback = "Outstanding Match 🔥" if match_score >= 75 else "Strong Potential 👍" if match_score >= 55 else "Room to Improve ⚡"
+            feedback = "Excellent Match" if match_score >= 75 else "Good Potential" if match_score >= 55 else "Needs Improvement"
 
-            # Save History
-            st.session_state.history.append({"score": match_score, "jd": jd_text[:80] + "..."})
-            if len(st.session_state.history) > 4:
-                st.session_state.history.pop(0)
+            # Celebration for high score
+            if match_score >= 80:
+                st.balloons()
 
-            # Beautiful Tabs
+            # Results in beautiful animated tabs
             tab1, tab2, tab3, tab4, tab5 = st.tabs([
                 "📊 Match Score", 
-                "💡 Improvement Tips", 
+                "💡 Suggestions", 
                 "📝 Tailored Resume", 
                 "✉️ Cover Letter", 
                 "🎯 Interview Prep"
@@ -191,43 +192,43 @@ if uploaded_file and jd_text:
 
             with tab1:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                st.subheader("Your Resume Match Score")
+                st.subheader("Resume Match Score")
                 st.markdown(f"""
                 <div class="score-circle {score_class}">
                     {match_score}%
                 </div>
+                <p style="text-align:center; font-size:1.25rem; margin-top:10px;">{feedback}</p>
                 """, unsafe_allow_html=True)
-                st.markdown(f"**{feedback}**")
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with tab2:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                prompt = f"Give specific improvement suggestions and list missing skills.\nResume: {resume_text[:4000]}\nJob: {jd_text[:4000]}"
-                tips = llm.invoke(prompt).content
-                st.markdown(tips)
+                prompt = f"List missing skills and give 5 practical improvement suggestions.\nResume: {resume_text[:4000]}\nJob: {jd_text[:4000]}"
+                response = llm.invoke(prompt).content
+                st.markdown(response)
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with tab3:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                prompt = f"Rewrite this resume to strongly match the job. Use powerful language.\nResume: {resume_text[:4000]}\nJob: {jd_text[:4000]}"
+                prompt = f"Rewrite the resume to perfectly match this job description. Keep it professional.\nResume: {resume_text[:4000]}\nJob: {jd_text[:4000]}"
                 tailored = llm.invoke(prompt).content
                 st.markdown(tailored)
                 pdf_bytes = create_tailored_pdf(tailored)
-                st.download_button("📥 Download Tailored Resume", pdf_bytes, "Tailored_Resume.pdf", use_container_width=True)
+                st.download_button("📥 Download Tailored Resume PDF", pdf_bytes, "Tailored_Resume.pdf", use_container_width=True)
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with tab4:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                prompt = f"Write a compelling, concise cover letter.\nResume: {resume_text[:3000]}\nJob: {jd_text[:3000]}"
+                prompt = f"Write a compelling cover letter based on the resume and job.\nResume: {resume_text[:3000]}\nJob: {jd_text[:3000]}"
                 cover = llm.invoke(prompt).content
                 st.markdown(cover)
                 pdf_cover = create_tailored_pdf(cover, "Cover Letter")
-                st.download_button("📥 Download Cover Letter", pdf_cover, "Cover_Letter.pdf", use_container_width=True)
+                st.download_button("📥 Download Cover Letter PDF", pdf_cover, "Cover_Letter.pdf", use_container_width=True)
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with tab5:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                prompt = f"Generate 6 relevant interview questions with short sample answers for this role.\nJob: {jd_text[:3000]}"
+                prompt = f"Generate 5 relevant interview questions with short sample answers.\nJob: {jd_text[:3000]}"
                 interview = llm.invoke(prompt).content
                 st.markdown(interview)
                 st.markdown('</div>', unsafe_allow_html=True)
@@ -235,16 +236,15 @@ if uploaded_file and jd_text:
 else:
     st.markdown("""
     <div class="glass-card" style="text-align:center; padding:4rem 2rem;">
-        <h2>Ready to land your dream job?</h2>
-        <p style="font-size:1.2rem;">Upload your resume and paste a job description to get a complete AI-powered application kit.</p>
+        <h3>Upload your resume and paste a job description</h3>
+        <p>Get AI-powered insights, tailored resume, cover letter & interview preparation.</p>
     </div>
     """, unsafe_allow_html=True)
 
-# Footer
 st.markdown("---")
 st.markdown(
-    "<p style='text-align:center; color:#888; padding:1rem;'>"
-    "ResumeFlow • Beautiful AI Resume Optimizer • Built for 2026 Campus Placements"
+    "<p style='text-align: center; color: #94a3b8; padding: 1rem;'>"
+    "ResumeFlow • Eye-friendly AI Resume Optimizer with smooth animations"
     "</p>", 
     unsafe_allow_html=True
 )
